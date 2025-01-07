@@ -1,6 +1,4 @@
-// Your JS code here.
-
-// Do not change code below this line
+// Questions data
 const questions = [
   {
     question: "What is the capital of France?",
@@ -30,86 +28,73 @@ const questions = [
 ];
 
 // Get user answers from session storage or initialize an empty array
-const userAnswers = JSON.parse(sessionStorage.getItem('progress')) || [];
+let userAnswers = JSON.parse(sessionStorage.getItem("progress")) || Array(questions.length).fill(null);
 
 // Function to render questions with user's selected options
 function renderQuestions() {
-  const questionsElement = document.getElementById('questions'); // Get the container element
-  questionsElement.innerHTML = ''; // Clear previous content
+  const questionsElement = document.getElementById("questions");
+  questionsElement.innerHTML = ""; // Clear previous content
 
-  for (let i = 0; i < questions.length; i++) {
-    const question = questions[i];
+  questions.forEach((question, index) => {
     const questionElement = document.createElement("div");
+    questionElement.innerHTML = `<p>${question.question}</p>`;
 
-    const questionText = document.createTextNode(question.question);
-    questionElement.appendChild(questionText);
-
-    for (let j = 0; j < question.choices.length; j++) {
-      const choice = question.choices[j];
+    question.choices.forEach((choice) => {
       const choiceElement = document.createElement("input");
-      choiceElement.setAttribute("type", "radio");
-      choiceElement.setAttribute("name", `question-${i}`);
-      choiceElement.setAttribute("value", choice);
+      choiceElement.type = "radio";
+      choiceElement.name = `question-${index}`;
+      choiceElement.value = choice;
 
-      if (userAnswers[i] === choice) {
-        choiceElement.setAttribute("checked", true);
+      // Check if the choice was previously selected
+      if (userAnswers[index] === choice) {
+        choiceElement.checked = true;
       }
+
+      // Add event listener to save progress when a choice is selected
+      choiceElement.addEventListener("change", () => {
+        userAnswers[index] = choice;
+        sessionStorage.setItem("progress", JSON.stringify(userAnswers));
+      });
 
       const choiceText = document.createTextNode(choice);
       questionElement.appendChild(choiceElement);
       questionElement.appendChild(choiceText);
-    }
+      questionElement.appendChild(document.createElement("br"));
+    });
 
     questionsElement.appendChild(questionElement);
-  }
+  });
 
   // Add submit button
-  const submitButton = document.createElement('button');
-  submitButton.textContent = 'Submit';
-  submitButton.addEventListener('click', submitQuiz);
+  const submitButton = document.createElement("button");
+  submitButton.textContent = "Submit";
+  submitButton.addEventListener("click", submitQuiz);
   questionsElement.appendChild(submitButton);
 }
 
-// Save user answers to session storage
-function saveProgress() {
-  const radios = document.querySelectorAll('input[type="radio"]');
-  for (let i = 0; i < radios.length; i++) {
-    if (radios[i].checked) {
-      userAnswers[Math.floor(i / radios.length)] = radios[i].value;
-    }
-  }
-  sessionStorage.setItem('progress', JSON.stringify(userAnswers));
-}
-
-// Calculate and display score
+// Function to calculate and display score
 function submitQuiz() {
   let score = 0;
-  for (let i = 0; i < questions.length; i++) {
-    if (userAnswers[i] === questions[i].answer) {
+  questions.forEach((question, index) => {
+    if (userAnswers[index] === question.answer) {
       score++;
     }
-  }
+  });
 
-  const resultElement = document.createElement('div');
-  resultElement.textContent = `Your score is ${score} out of ${questions.length}`;
-  document.body.appendChild(resultElement);
+  // Display score
+  const scoreElement = document.getElementById("score");
+  scoreElement.textContent = `Your score is ${score} out of ${questions.length}`;
 
   // Store score in local storage
-  localStorage.setItem('score', score);
+  localStorage.setItem("score", score);
 }
-
-// Event listener for changes in radio buttons
-document.addEventListener('change', () => {
-  saveProgress();
-});
 
 // Render questions initially
 renderQuestions();
 
-// Load score from local storage
-const storedScore = localStorage.getItem('score');
-if (storedScore) {
-  const scoreDisplay = document.createElement('div');
-  scoreDisplay.textContent = `Previous Score: ${storedScore}`;
-  document.body.appendChild(scoreDisplay);
+// Load and display previous score from local storage
+const storedScore = localStorage.getItem("score");
+if (storedScore !== null) {
+  const scoreElement = document.getElementById("score");
+  scoreElement.textContent = `Previous Score: ${storedScore}`;
 }
