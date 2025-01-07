@@ -67,6 +67,7 @@ function renderQuestions() {
 
   // Add submit button
   const submitButton = document.createElement("button");
+  submitButton.id = "submit"; // Add ID for the submit button
   submitButton.textContent = "Submit";
   submitButton.addEventListener("click", submitQuiz);
   questionsElement.appendChild(submitButton);
